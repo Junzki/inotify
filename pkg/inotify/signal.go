@@ -4,23 +4,27 @@ import (
 	"reflect"
 	"runtime"
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
+	// SignalExitSuccess returns when handler function has exited successfully.
 	SignalExitSuccess = 0
+
+	// SignalExitFailure returns when handler function raises a panic.
 	SignalExitFailure = 1
 )
 
+// SignalHandler type is the abstract handler function.
 type SignalHandler func(ISignal, ...interface{})
 
+// ISignal is the abstract Signal "class".
 type ISignal interface {
 	Send(args ...interface{})
 	SendAsync(wait chan int, args ...interface{})
 	Connect(handler SignalHandler)
 }
 
+// Signal struct holds its receivers.
 type Signal struct {
 	name  string
 	mutex sync.Mutex
@@ -30,6 +34,7 @@ type Signal struct {
 	numRecv   int
 }
 
+// NewSignal initializes one new signal instance.
 func NewSignal(name string, handlers ...SignalHandler) *Signal {
 	s := Signal{
 		name:      name,
@@ -47,10 +52,12 @@ func NewSignal(name string, handlers ...SignalHandler) *Signal {
 	return &s
 }
 
+// Name returns the signal name.
 func (s *Signal) Name() string {
 	return s.name
 }
 
+// Connect appends one signal handler.
 func (s *Signal) Connect(handler SignalHandler) {
 	s.mutex.Lock()
 
@@ -61,6 +68,7 @@ func (s *Signal) Connect(handler SignalHandler) {
 	s.mutex.Unlock()
 }
 
+// Send calls each handler one-by-one.
 func (s *Signal) Send(args ...interface{}) {
 	s.mutex.Lock()
 	defer s.recover(s.name, nil)
@@ -71,6 +79,7 @@ func (s *Signal) Send(args ...interface{}) {
 	s.mutex.Unlock()
 }
 
+// SendAsync calls handlers asynchonosly.
 func (s *Signal) SendAsync(wait chan int, args ...interface{}) {
 	s.mutex.Lock()
 	for n, h := range s.receivers {
@@ -96,8 +105,6 @@ func (s *Signal) recover(n string, wait chan int) {
 	}
 
 	if r := recover(); nil != r {
-		log.Errorf("Recovered in %s: %s", n, r)
-
 		if nil != wait {
 			wait <- SignalExitFailure
 		}
