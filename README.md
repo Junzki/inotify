@@ -18,8 +18,7 @@ func sigHandle(s inotify.ISignal, _ ...interface{}) {
 }
 
 func main() {
-	sig := inotify.NewSignal("some-signal", sigHandle)
-
+    sig := inotify.NewSignal("some-signal", sigHandle)
     sig.Send()  // Calls each handler function.
     
     // Console output: "some-signal called."
