@@ -8,13 +8,13 @@ Go based Django-like signal utilities.
 ## Usage
 ```golang
 import (
-	"fmt"
+    "fmt"
 
-	"github.com/junzki/inotify"
+    "github.com/junzki/inotify"
 )
 
 func sigHandle(s inotify.ISignal, _ ...interface{}) {
-	fmt.Printf("%s called.", s.Name())
+    fmt.Printf("%s called.", s.Name())
 }
 
 func main() {
