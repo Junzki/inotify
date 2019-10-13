@@ -8,14 +8,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var toggleChecker struct {
+var toggleChecker = struct {
 	Mutex sync.Mutex
 	Flag  int
+} {
+	Mutex: sync.Mutex{},
+	Flag: 0,
 }
 
 func noopHandler(_ ISignal, _ ...interface{}) {
 	toggleChecker.Mutex.Lock()
-	toggleChecker.Flag++
+	toggleChecker.Flag += 1
 	toggleChecker.Mutex.Unlock()
 }
 

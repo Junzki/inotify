@@ -28,7 +28,7 @@ type ISignal interface {
 // Signal struct holds its receivers.
 type Signal struct {
 	name  string
-	mutex sync.Mutex
+	mutex sync.RWMutex
 
 	// Use map to avoid duplications.
 	receivers map[string]SignalHandler
@@ -71,29 +71,29 @@ func (s *Signal) Connect(handler SignalHandler) {
 
 // Send calls each handler one-by-one.
 func (s *Signal) Send(args ...interface{}) {
-	s.mutex.Lock()
+	s.mutex.RLock()
 	defer s.recover(s.name, nil)
 
 	for _, h := range s.receivers {
 		h(s, args...)
 	}
-	s.mutex.Unlock()
+	s.mutex.RUnlock()
 }
 
 // SendAsync calls handlers asynchonosly.
 func (s *Signal) SendAsync(wait chan int, args ...interface{}) {
-	s.mutex.Lock()
+	s.mutex.RLock()
 	for n, h := range s.receivers {
-		go func() {
+		go func(s *Signal, h SignalHandler, n string, wait chan int, args ...interface{}) {
 			defer s.recover(n, wait)
 
 			h(s, args...)
 			if nil != wait {
 				wait <- SignalExitSuccess
 			}
-		}()
+		}(s, h, n, wait, args...)
 	}
-	s.mutex.Unlock()
+	s.mutex.RUnlock()
 }
 
 func (s *Signal) getHandlerName(h SignalHandler) string {
