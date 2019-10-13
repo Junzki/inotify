@@ -22,7 +22,7 @@ func (c *toggleChecker) Inc() {
 func (c *toggleChecker) Reset() {
 	c.m.Lock()
 	defer c.m.Unlock()
-	
+
 	c.flag = 0
 }
 

@@ -20,4 +20,4 @@ jobs:
       run: go test -race -coverprofile=coverage.txt -covermode=atomic
 
     - name: Upload Coverage Report
-      run: bash <(curl -s https://codecov.io/bash)
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_UUID }}
