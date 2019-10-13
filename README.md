@@ -1,6 +1,9 @@
 # INotify
 
-Go based Django-like signal utilites. 
+Go based Django-like signal utilities. 
+
+[![codecov](https://codecov.io/gh/Junzki/inotify/branch/master/graph/badge.svg)](https://codecov.io/gh/Junzki/inotify)
+
 
 ## Usage
 ```golang
