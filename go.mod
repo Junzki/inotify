@@ -1,4 +1,4 @@
-module inotify
+module github.com/junzki/inotify
 
 go 1.13
 

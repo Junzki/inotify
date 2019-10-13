@@ -54,7 +54,7 @@ func TestSignal_getHandlerName(t *testing.T) {
 		t.Error("bad handler name")
 	}
 
-	name = sep[1]
+	name = sep[len(sep)-1] // Get the last one as the function name.
 
 	assert.Equal(t, "noopHandler", name)
 }
