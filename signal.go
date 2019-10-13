@@ -19,6 +19,7 @@ type SignalHandler func(ISignal, ...interface{})
 
 // ISignal is the abstract Signal "class".
 type ISignal interface {
+	Name() string
 	Send(args ...interface{})
 	SendAsync(wait chan int, args ...interface{})
 	Connect(handler SignalHandler)
