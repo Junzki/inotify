@@ -1,25 +1,44 @@
 package inotify
 
 import (
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-var toggleChecker = struct {
-	Mutex sync.Mutex
-	Flag  int
-} {
-	Mutex: sync.Mutex{},
-	Flag: 0,
+type toggleChecker struct {
+	m    sync.RWMutex
+	flag int
+}
+
+func (c *toggleChecker) Inc() {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	c.flag++
+}
+
+func (c *toggleChecker) Reset() {
+	c.m.Lock()
+	defer c.m.Unlock()
+	
+	c.flag = 0
+}
+
+func (c *toggleChecker) GetFlag() int {
+	c.m.RLock()
+	defer c.m.RUnlock()
+
+	return c.flag
+}
+
+var checker = toggleChecker {
+	flag: 0,
 }
 
 func noopHandler(_ ISignal, _ ...interface{}) {
-	toggleChecker.Mutex.Lock()
-	toggleChecker.Flag += 1
-	toggleChecker.Mutex.Unlock()
+	checker.Inc()
 }
 
 func panicHandler(_ ISignal, _ ...interface{}) {
@@ -63,14 +82,14 @@ func TestSignal_getHandlerName(t *testing.T) {
 }
 
 func TestSignal_SendAsync(t *testing.T) {
-	toggleChecker.Flag = 0
+	checker.Reset()
 	s := NewSignal("", noopHandler)
 	w := make(chan int)
 
 	s.SendAsync(w)
 	ret := <-w
 
-	assert.Equal(t, 1, toggleChecker.Flag)
+	assert.Equal(t, 1, checker.GetFlag())
 	assert.Equal(t, SignalExitSuccess, ret)
 
 	s.SendAsync(w)
@@ -78,7 +97,9 @@ func TestSignal_SendAsync(t *testing.T) {
 
 	defer func() {
 		<-w
-		assert.True(t, 2 <= toggleChecker.Flag && 3 >= toggleChecker.Flag)
+
+		v := checker.GetFlag()
+		assert.True(t, 2 <= v && 3 >= v)
 	}()
 }
 
@@ -98,9 +119,9 @@ func TestSignal_Send(t *testing.T) {
 	s.Send()
 
 	// Test normal signal calls.
-	toggleChecker.Flag = 0
+	checker.Reset()
 	s = NewSignal("", noopHandler)
 	s.Send()
 
-	assert.Equal(t, 1, toggleChecker.Flag)
+	assert.Equal(t, 1, checker.GetFlag())
 }
