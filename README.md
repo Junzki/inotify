@@ -5,18 +5,20 @@ Go based Django-like signal utilites.
 ## Usage
 ```golang
 import (
-    "fmt"
-    "github.com/junzki/inotify"
+	"fmt"
+
+	"github.com/junzki/inotify"
 )
 
-
-func handlerFunc(s ISigal, _ ...interface{}) {
-    fmt.Printf("%s called.\n", s.Name())
+func sigHandle(s inotify.ISignal, _ ...interface{}) {
+	fmt.Printf("%s called.", s.Name())
 }
 
-NamedSignal := inotify.NewSignal("NamedSignal", handlerFunc)
+func main() {
+	sig := inotify.NewSignal("some-signal", sigHandle)
 
-
-NamedSignal.Send()  // Calls each handler function.
-// Console output: NamedSignal calld.
+    sig.Send()  // Calls each handler function.
+    
+    // Console output: "some-signal called."
+}
 ```
